@@ -61,16 +61,22 @@ object DebugMacros extends DebugMacros {
             }.tree) :+ reify {
                 println()
             }.tree
-            val separatorTree = reify { print(" - ") }.tree
+//            val separatorTree = reify { print(" - ") }.tree
 
             val logLevelTree = reify { print(prefixExpr.splice) }.tree
-            val clazzExprTree = Apply(Select(Ident(TermName("Predef")), TermName("print")),
-                List(
-                    Apply(Select(Ident(TermName("getClass")), TermName("getSimpleName")), Nil)
-                )
+//            val clazzExprTree = Apply(Select(Ident(TermName("Predef")), TermName("print")),
+//                List(
+//                    Apply(Select(Ident(TermName("getClass")), TermName("getSimpleName")), Nil)
+//                )
+//            )
+
+            val clazzExprTree = Apply(
+                Select(Ident(TermName("Predef")), TermName("print")),
+                    List(Apply(Select(Select(Select(This(typeNames.EMPTY), TermName("getClass")),
+                        TermName("getSimpleName")), TermName("$plus")), List(Literal(Constant(" - ")))))
             )
 
-            val treeSeps =  List(logLevelTree, clazzExprTree, separatorTree) ++
+            val treeSeps =  List(logLevelTree, clazzExprTree) ++
                     trees.zip(seps).flatMap(p => List(p._1, p._2))
 
             c.Expr[Unit](Block(treeSeps.toList, Literal(Constant(()))))
