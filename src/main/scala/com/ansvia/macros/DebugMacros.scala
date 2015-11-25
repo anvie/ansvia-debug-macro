@@ -2,7 +2,7 @@ package com.ansvia.macros
 
 
 import language.experimental.macros
-import scala.reflect.macros.whitebox.Context
+import scala.reflect.macros.whitebox
 
 trait DebugMacros {
     def info(params: Any*):Unit = macro DebugMacros.info_impl
@@ -22,12 +22,12 @@ object DebugMacros extends DebugMacros {
         }
     }
 
-    def info_impl(c:Context)(params:c.Expr[Any]*):c.Expr[Unit] = _print_impl("[INFO]: ")(c)(params: _*)
-    def debug_impl(c:Context)(params:c.Expr[Any]*):c.Expr[Unit] = _print_impl("[DEBUG]: ")(c)(params: _*)
-    def warn_impl(c:Context)(params:c.Expr[Any]*):c.Expr[Unit] = _print_impl("[WARN]: ")(c)(params: _*)
-    def error_impl(c:Context)(params:c.Expr[Any]*):c.Expr[Unit] = _print_impl("[ERROR]: ")(c)(params: _*)
+    def info_impl(c:whitebox.Context)(params:c.Expr[Any]*):c.Expr[Unit] = _print_impl("[INFO]: ")(c)(params: _*)
+    def debug_impl(c:whitebox.Context)(params:c.Expr[Any]*):c.Expr[Unit] = _print_impl("[DEBUG]: ")(c)(params: _*)
+    def warn_impl(c:whitebox.Context)(params:c.Expr[Any]*):c.Expr[Unit] = _print_impl("[WARN]: ")(c)(params: _*)
+    def error_impl(c:whitebox.Context)(params:c.Expr[Any]*):c.Expr[Unit] = _print_impl("[ERROR]: ")(c)(params: _*)
 
-    def _print_impl(prefix:String)(c:Context)(params:c.Expr[Any]*):c.Expr[Unit] = {
+    def _print_impl(prefix:String)(c:whitebox.Context)(params:c.Expr[Any]*):c.Expr[Unit] = {
         import c.universe._
 
         val prefixExpr = c.Expr[String](Literal(Constant(prefix)))
@@ -54,21 +54,13 @@ object DebugMacros extends DebugMacros {
                 }
             }
 
-//            c.enclosingPosition.
-
             val seps = (1 to trees.size-1).map(_ => reify {
                 print(", ")
             }.tree) :+ reify {
                 println()
             }.tree
-//            val separatorTree = reify { print(" - ") }.tree
 
             val logLevelTree = reify { print(prefixExpr.splice) }.tree
-//            val clazzExprTree = Apply(Select(Ident(TermName("Predef")), TermName("print")),
-//                List(
-//                    Apply(Select(Ident(TermName("getClass")), TermName("getSimpleName")), Nil)
-//                )
-//            )
 
             val clazzExprTree = Apply(
                 Select(Ident(TermName("Predef")), TermName("print")),
