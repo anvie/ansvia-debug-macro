@@ -36,21 +36,21 @@ object DebugMacros extends DebugMacros {
 
             val trees = params.map { param =>
                 param.tree match {
-                    case Literal(Constant(_const)) => {
+                    case Literal(Constant(_const)) =>
                         val reified = reify {
-                            print(prefixExpr.splice + param.splice)
+                            print(param.splice)
                         }
                         reified.tree
-                    }
-                    case _ => {
+
+                    case _ =>
                         val paramRep = show(param.tree)
                         val paramRepTree = Literal(Constant(paramRep))
                         val paramRepExpr = c.Expr[String](paramRepTree)
                         val reified = reify {
-                            print(prefixExpr.splice + paramRepExpr.splice + " = " + param.splice)
+                            print(paramRepExpr.splice + " = " + param.splice)
                         }
                         reified.tree
-                    }
+
                 }
             }
 
@@ -60,7 +60,8 @@ object DebugMacros extends DebugMacros {
                 println()
             }.tree
 
-            val treeSeps = trees.zip(seps).flatMap(p => List(p._1, p._2))
+            val treeSeps =  List(reify { print(prefixExpr.splice) }.tree) ++
+                    trees.zip(seps).flatMap(p => List(p._1, p._2))
 
             c.Expr[Unit](Block(treeSeps.toList, Literal(Constant(()))))
 

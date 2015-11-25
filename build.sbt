@@ -10,9 +10,9 @@ organization := "com.ansvia.macros"
 
 name := "ansvia-debug"
 
-version := "0.0.5-SNAPSHOT"
+version := "0.0.7-SNAPSHOT"
 
-description := ""
+description := "Ansvia debug macro"
 
 scalaVersion := "2.11.6"
 
