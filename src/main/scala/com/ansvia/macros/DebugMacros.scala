@@ -2,7 +2,7 @@ package com.ansvia.macros
 
 
 import language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.whitebox.Context
 
 trait DebugMacros {
     def info(params: Any*):Unit = macro DebugMacros.info_impl
@@ -54,13 +54,23 @@ object DebugMacros extends DebugMacros {
                 }
             }
 
+//            c.enclosingPosition.
+
             val seps = (1 to trees.size-1).map(_ => reify {
                 print(", ")
             }.tree) :+ reify {
                 println()
             }.tree
+            val separatorTree = reify { print(" - ") }.tree
 
-            val treeSeps =  List(reify { print(prefixExpr.splice) }.tree) ++
+            val logLevelTree = reify { print(prefixExpr.splice) }.tree
+            val clazzExprTree = Apply(Select(Ident(TermName("Predef")), TermName("print")),
+                List(
+                    Apply(Select(Ident(TermName("getClass")), TermName("getSimpleName")), Nil)
+                )
+            )
+
+            val treeSeps =  List(logLevelTree, clazzExprTree, separatorTree) ++
                     trees.zip(seps).flatMap(p => List(p._1, p._2))
 
             c.Expr[Unit](Block(treeSeps.toList, Literal(Constant(()))))
